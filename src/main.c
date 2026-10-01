@@ -35,7 +35,7 @@ void fcfs(Process processes[], int n) {
         }
         
         //time when process first starts
-        int startTime = currentTime;
+        processes[i].startTime = currentTime;
 
 
         // Run the process
@@ -54,10 +54,100 @@ void fcfs(Process processes[], int n) {
 
 
         // Response Time
-        processes[i].responseTime = startTime - processes[i].arrivalTime;
+        processes[i].responseTime = processes[i].startTime - processes[i].arrivalTime;
     }
 }
 
+// Print FCFS Gantt Chart
+// Print FCFS Gantt Chart
+void printGanttChart(Process processes[], int n) {
+
+    printf("\n\nGantt Chart\n\n");
+
+    int previousFinish = 0;
+
+    // -------------------------------
+    // TOP BORDER
+    // -------------------------------
+
+    for (int i = 0; i < n; i++) {
+
+        // Print IDLE block if there is a gap
+        if (processes[i].startTime > previousFinish) {
+            printf("+--------");
+        }
+
+        printf("+--------");
+    }
+
+    printf("+\n");
+
+
+    // -------------------------------
+    // PROCESS / IDLE LABELS
+    // -------------------------------
+
+    previousFinish = 0;
+
+    printf("|");
+
+    for (int i = 0; i < n; i++) {
+
+        // CPU was idle before this process
+        if (processes[i].startTime > previousFinish) {
+
+            printf("  IDLE  |");
+        }
+
+        // Process block
+        printf("   P%d   |", processes[i].pid);
+
+        previousFinish = processes[i].completionTime;
+    }
+
+    printf("\n");
+
+
+    // -------------------------------
+    // BOTTOM BORDER
+    // -------------------------------
+
+    previousFinish = 0;
+
+    for (int i = 0; i < n; i++) {
+
+        if (processes[i].startTime > previousFinish) {
+            printf("+--------");
+        }
+
+        printf("+--------");
+    }
+
+    printf("+\n");
+
+
+    // -------------------------------
+    // TIMESTAMPS
+    // -------------------------------
+
+    previousFinish = 0;
+
+    printf("%-8d", 0);
+
+    for (int i = 0; i < n; i++) {
+
+        // Print the arrival/start time of an idle gap
+        if (processes[i].startTime > previousFinish) {
+            printf("%-8d", processes[i].startTime);
+        }
+
+        printf("%-8d", processes[i].completionTime);
+
+        previousFinish = processes[i].completionTime;
+    }
+
+    printf("\n");
+}
 
 int main() {
 
@@ -94,6 +184,7 @@ int main() {
 
     sortByArrival(processes, n);
     fcfs(processes, n);
+    printGanttChart(processes, n);
 
     // CALCULATE AVERAGES
 

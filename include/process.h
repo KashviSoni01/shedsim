@@ -13,6 +13,7 @@ typedef struct {
     int turnaroundTime;
     int waitingTime;
     int responseTime;
+    int startTime;
 
     int started;
 } Process;
