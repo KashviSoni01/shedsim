@@ -39,7 +39,7 @@ int main() {
     }
 
     sortByArrival(processes, n);
-    fcfs(processes, n);
+    sjf(processes, n);
     printGanttChart(processes, n);
 
     // CALCULATE AVERAGES

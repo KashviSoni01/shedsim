@@ -1,15 +1,18 @@
 #include <stdio.h>
 #include "scheduler.h"
 
-
 // Sort processes according to arrival time
-void sortByArrival(Process processes[], int n) {
+void sortByArrival(Process processes[], int n)
+{
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++)
+    {
 
-        for (int j = 0; j < n - 1; j++) {
+        for (int j = 0; j < n - 1; j++)
+        {
 
-            if (processes[j].arrivalTime > processes[j + 1].arrivalTime) {
+            if (processes[j].arrivalTime > processes[j + 1].arrivalTime)
+            {
 
                 Process temp = processes[j];
 
@@ -21,26 +24,26 @@ void sortByArrival(Process processes[], int n) {
     }
 }
 
-
 // FCFS Scheduling
-void fcfs(Process processes[], int n) {
+void fcfs(Process processes[], int n)
+{
 
     int currentTime = 0;
 
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++)
+    {
 
-        //CPU is idle, move time forward
-        if(currentTime < processes[i].arrivalTime) {
-            currentTime=processes[i].arrivalTime;
+        // CPU is idle, move time forward
+        if (currentTime < processes[i].arrivalTime)
+        {
+            currentTime = processes[i].arrivalTime;
         }
-        
-        //time when process first starts
-        processes[i].startTime = currentTime;
 
+        // time when process first starts
+        processes[i].startTime = currentTime;
 
         // Run the process
         currentTime += processes[i].burstTime;
-
 
         // Completion Time
         processes[i].completionTime = currentTime;
@@ -48,21 +51,125 @@ void fcfs(Process processes[], int n) {
         // Turnaround Time
         processes[i].turnaroundTime = processes[i].completionTime - processes[i].arrivalTime;
 
-
         // Waiting Time
         processes[i].waitingTime = processes[i].turnaroundTime - processes[i].burstTime;
-
 
         // Response Time
         processes[i].responseTime = processes[i].startTime - processes[i].arrivalTime;
     }
 }
 
-// Print FCFS Gantt Chart
-// Print FCFS Gantt Chart
-void printGanttChart(Process processes[], int n) {
+// SJF Scheduling
+void sjf(Process processes[], int n)
+{
 
+    sortByArrival(processes, n);
+
+    int currentTime = processes[0].arrivalTime;
+
+    int completed[n];
+
+    for (int i = 0; i < n; i++)
+    {
+        completed[i] = 0;
+    }
+
+    for (int count = 0; count < n; count++)
+    {
+
+        int shortestIndex = -1;
+
+        // Find shortest process that has arrived
+        for (int i = 0; i < n; i++)
+        {
+
+            if (completed[i] == 0 &&
+                processes[i].arrivalTime <= currentTime)
+            {
+
+                if (shortestIndex == -1 ||
+                    processes[i].burstTime <
+                        processes[shortestIndex].burstTime)
+                {
+
+                    shortestIndex = i;
+                }
+            }
+        }
+
+        if (shortestIndex == -1)
+        {
+
+            currentTime = processes[count].arrivalTime;
+
+            // Search again for the shortest available process
+            for (int i = 0; i < n; i++)
+            {
+
+                if (completed[i] == 0 &&
+                    processes[i].arrivalTime <= currentTime)
+                {
+
+                    if (shortestIndex == -1 ||
+                        processes[i].burstTime <
+                            processes[shortestIndex].burstTime)
+                    {
+
+                        shortestIndex = i;
+                    }
+                }
+            }
+        }
+
+        // Run selected process
+        processes[shortestIndex].startTime = currentTime;
+
+        currentTime += processes[shortestIndex].burstTime;
+
+        processes[shortestIndex].completionTime = currentTime;
+
+        processes[shortestIndex].turnaroundTime =
+            processes[shortestIndex].completionTime -
+            processes[shortestIndex].arrivalTime;
+
+        processes[shortestIndex].waitingTime =
+            processes[shortestIndex].turnaroundTime -
+            processes[shortestIndex].burstTime;
+
+        processes[shortestIndex].responseTime =
+            processes[shortestIndex].startTime -
+            processes[shortestIndex].arrivalTime;
+
+        completed[shortestIndex] = 1;
+    }
+}
+
+// Print Gantt Chart
+void printGanttChart(Process processes[], int n)
+{
     printf("\n\nGantt Chart\n\n");
+
+    // Make a copy so we don't change the original process order
+    Process order[n];
+
+    for (int i = 0; i < n; i++)
+    {
+        order[i] = processes[i];
+    }
+
+    // Sort the copy by start time
+    for (int i = 0; i < n - 1; i++)
+    {
+        for (int j = 0; j < n - i - 1; j++)
+        {
+            if (order[j].startTime > order[j + 1].startTime)
+            {
+                Process temp = order[j];
+                order[j] = order[j + 1];
+                order[j + 1] = temp;
+            }
+        }
+    }
 
     int previousFinish = 0;
 
@@ -70,18 +177,19 @@ void printGanttChart(Process processes[], int n) {
     // TOP BORDER
     // -------------------------------
 
-    for (int i = 0; i < n; i++) {
-
-        // Print IDLE block if there is a gap
-        if (processes[i].startTime > previousFinish) {
+    for (int i = 0; i < n; i++)
+    {
+        // IDLE block
+        if (order[i].startTime > previousFinish)
+        {
             printf("+--------");
         }
 
+        // Process block
         printf("+--------");
     }
 
     printf("+\n");
-
 
     // -------------------------------
     // PROCESS / IDLE LABELS
@@ -91,22 +199,21 @@ void printGanttChart(Process processes[], int n) {
 
     printf("|");
 
-    for (int i = 0; i < n; i++) {
-
+    for (int i = 0; i < n; i++)
+    {
         // CPU was idle before this process
-        if (processes[i].startTime > previousFinish) {
-
+        if (order[i].startTime > previousFinish)
+        {
             printf("  IDLE  |");
         }
 
-        // Process block
-        printf("   P%d   |", processes[i].pid);
+        // Process
+        printf("   P%d   |", order[i].pid);
 
-        previousFinish = processes[i].completionTime;
+        previousFinish = order[i].completionTime;
     }
 
     printf("\n");
-
 
     // -------------------------------
     // BOTTOM BORDER
@@ -114,9 +221,10 @@ void printGanttChart(Process processes[], int n) {
 
     previousFinish = 0;
 
-    for (int i = 0; i < n; i++) {
-
-        if (processes[i].startTime > previousFinish) {
+    for (int i = 0; i < n; i++)
+    {
+        if (order[i].startTime > previousFinish)
+        {
             printf("+--------");
         }
 
@@ -124,7 +232,6 @@ void printGanttChart(Process processes[], int n) {
     }
 
     printf("+\n");
-
 
     // -------------------------------
     // TIMESTAMPS
@@ -134,16 +241,18 @@ void printGanttChart(Process processes[], int n) {
 
     printf("%-8d", 0);
 
-    for (int i = 0; i < n; i++) {
-
-        // Print the arrival/start time of an idle gap
-        if (processes[i].startTime > previousFinish) {
-            printf("%-8d", processes[i].startTime);
+    for (int i = 0; i < n; i++)
+    {
+        // Start of an idle period
+        if (order[i].startTime > previousFinish)
+        {
+            printf("%-8d", order[i].startTime);
         }
 
-        printf("%-8d", processes[i].completionTime);
+        // Process completion
+        printf("%-8d", order[i].completionTime);
 
-        previousFinish = processes[i].completionTime;
+        previousFinish = order[i].completionTime;
     }
 
     printf("\n");

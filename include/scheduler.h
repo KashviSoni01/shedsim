@@ -7,6 +7,8 @@ void sortByArrival(Process processes[], int n);
 
 void fcfs(Process processes[], int n);
 
+void sjf(Process processes[], int n);
+
 void printGanttChart(Process processes[], int n);
 
 #endif
