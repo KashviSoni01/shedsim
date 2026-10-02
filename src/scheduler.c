@@ -144,6 +144,117 @@ void sjf(Process processes[], int n)
     }
 }
 
+// Round Robin Scheduling
+void roundRobin(Process processes[], int n, int quantum)
+{
+    int queue[100];
+    int front = 0;
+    int rear = 0;
+    int queueCount = 0;
+
+    for (int i = 0; i < n; i++)
+    {
+        processes[i].remainingTime = processes[i].burstTime;
+        processes[i].started = 0;
+    }
+    sortByArrival(processes, n);
+
+    int currentTime = processes[0].arrivalTime;
+    int completed = 0;
+    int nextArrival = 0;
+
+    while (nextArrival < n &&
+           processes[nextArrival].arrivalTime <= currentTime)
+    {
+
+        queue[rear] = nextArrival;
+        rear = (rear + 1) % 100;
+        queueCount++;
+
+        nextArrival++;
+    }
+
+    while (completed < n)
+    {
+
+        if (queueCount == 0)
+        {
+            currentTime = processes[nextArrival].arrivalTime;
+
+            while (nextArrival < n &&
+                   processes[nextArrival].arrivalTime <= currentTime)
+            {
+
+                queue[rear] = nextArrival;
+                rear = (rear + 1) % 100;
+                queueCount++;
+
+                nextArrival++;
+            }
+        }
+
+        int processIndex = queue[front];
+        front = (front + 1) % 100;
+        queueCount--;
+
+        int timeSlice;
+
+        if (processes[processIndex].remainingTime < quantum)
+        {
+            timeSlice = processes[processIndex].remainingTime;
+        }
+        else
+        {
+            timeSlice = quantum;
+        }
+
+        if (processes[processIndex].started == 0)
+        {
+            processes[processIndex].startTime = currentTime;
+            processes[processIndex].responseTime =
+                currentTime - processes[processIndex].arrivalTime;
+
+            processes[processIndex].started = 1;
+        }
+
+        currentTime += timeSlice;
+        processes[processIndex].remainingTime -= timeSlice;
+
+        while (nextArrival < n &&
+                    processes[nextArrival].arrivalTime <= currentTime)
+        {
+
+            queue[rear] = nextArrival;
+            rear = (rear + 1) % 100;
+            queueCount++;
+
+            nextArrival++;
+        }
+
+        if (processes[processIndex].remainingTime == 0)
+        {
+
+            processes[processIndex].completionTime = currentTime;
+
+            processes[processIndex].turnaroundTime =
+                currentTime - processes[processIndex].arrivalTime;
+
+            processes[processIndex].waitingTime =
+                processes[processIndex].turnaroundTime -
+                processes[processIndex].burstTime;
+
+            completed++;
+        }
+        else
+        {
+
+            queue[rear] = processIndex;
+            rear = (rear + 1) % 100;
+            queueCount++;
+        }
+    }
+}
+
 // Print Gantt Chart
 void printGanttChart(Process processes[], int n)
 {

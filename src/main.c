@@ -2,22 +2,16 @@
 #include "process.h"
 #include "scheduler.h"
 
-
-
-
 int main() {
 
     int n;
+    int choice;
+    int quantum;
+
     Process processes[100];
-
-
-    // -------------------------------
-    // INPUT
-    // -------------------------------
 
     printf("Enter number of processes: ");
     scanf("%d", &n);
-
 
     for (int i = 0; i < n; i++) {
 
@@ -38,11 +32,45 @@ int main() {
         processes[i].remainingTime = processes[i].burstTime;
     }
 
-    sortByArrival(processes, n);
-    sjf(processes, n);
+    // -------------------------------
+    // SCHEDULING ALGORITHM MENU
+    // -------------------------------
+
+    printf("\nChoose Scheduling Algorithm:\n");
+    printf("1. FCFS\n");
+    printf("2. SJF (Non-Preemptive)\n");
+    printf("3. Round Robin\n");
+
+    printf("Enter your choice: ");
+    scanf("%d", &choice);
+
+    if (choice == 1) {
+
+        fcfs(processes, n);
+
+    }
+    else if (choice == 2) {
+
+        sjf(processes, n);
+
+    }
+    else if (choice == 3) {
+
+        printf("Enter time quantum: ");
+        scanf("%d", &quantum);
+
+        roundRobin(processes, n, quantum);
+
+    }
+    else {
+
+        printf("Invalid scheduling algorithm choice.\n");
+        return 1;
+
+    }
+
     printGanttChart(processes, n);
 
-    // CALCULATE AVERAGES
 
     double totalWaiting = 0;
     double totalTurnaround = 0;
@@ -51,26 +79,22 @@ int main() {
     for (int i = 0; i < n; i++) {
 
         totalWaiting += processes[i].waitingTime;
-
         totalTurnaround += processes[i].turnaroundTime;
-
         totalResponse += processes[i].responseTime;
+
     }
 
     double averageWaiting = totalWaiting / n;
-
     double averageTurnaround = totalTurnaround / n;
-
     double averageResponse = totalResponse / n;
 
-    //Display Result
+
     printf("\n");
     printf("-------------------------------------------------------------\n");
 
     printf("PID   Arrival   Burst   Completion   Turnaround   Waiting   Response\n");
 
     printf("-------------------------------------------------------------\n");
-
 
     for (int i = 0; i < n; i++) {
 
@@ -82,9 +106,13 @@ int main() {
                processes[i].turnaroundTime,
                processes[i].waitingTime,
                processes[i].responseTime);
+
     }
 
-    // Display averages
+    // -------------------------------
+    // DISPLAY AVERAGES
+    // -------------------------------
+
     printf("\nAverage Waiting Time: %.2f\n", averageWaiting);
     printf("Average Turnaround Time: %.2f\n", averageTurnaround);
     printf("Average Response Time: %.2f\n", averageResponse);
