@@ -144,51 +144,63 @@ void sjf(Process processes[], int n)
     }
 }
 
-// Round Robin Scheduling
-void roundRobin(Process processes[], int n, int quantum)
+// Round Robin Sheduling
+int roundRobin(
+    Process processes[],
+    int n,
+    int quantum,
+    ScheduleSegment segments[])
 {
     int queue[100];
     int front = 0;
     int rear = 0;
     int queueCount = 0;
+    int segmentCount = 0;
+
+    if (n <= 0 || n > 100 || quantum <= 0)
+        return 0;
 
     for (int i = 0; i < n; i++)
     {
         processes[i].remainingTime = processes[i].burstTime;
         processes[i].started = 0;
     }
+
     sortByArrival(processes, n);
 
-    int currentTime = processes[0].arrivalTime;
+    int currentTime = 0;
     int completed = 0;
     int nextArrival = 0;
 
     while (nextArrival < n &&
            processes[nextArrival].arrivalTime <= currentTime)
     {
-
         queue[rear] = nextArrival;
         rear = (rear + 1) % 100;
         queueCount++;
-
         nextArrival++;
     }
 
     while (completed < n)
     {
-
         if (queueCount == 0)
         {
-            currentTime = processes[nextArrival].arrivalTime;
+            int nextTime = processes[nextArrival].arrivalTime;
+
+            // Record the CPU idle period
+            segments[segmentCount].pid = 0;
+            segments[segmentCount].startTime = currentTime;
+            segments[segmentCount].endTime = nextTime;
+            segmentCount++;
+
+            currentTime = nextTime;
 
             while (nextArrival < n &&
                    processes[nextArrival].arrivalTime <= currentTime)
             {
-
                 queue[rear] = nextArrival;
                 rear = (rear + 1) % 100;
                 queueCount++;
-
                 nextArrival++;
             }
         }
@@ -200,13 +212,9 @@ void roundRobin(Process processes[], int n, int quantum)
         int timeSlice;
 
         if (processes[processIndex].remainingTime < quantum)
-        {
             timeSlice = processes[processIndex].remainingTime;
-        }
         else
-        {
             timeSlice = quantum;
-        }
 
         if (processes[processIndex].started == 0)
         {
@@ -217,23 +225,29 @@ void roundRobin(Process processes[], int n, int quantum)
             processes[processIndex].started = 1;
         }
 
+        // Record the start of this execution segment
+        segments[segmentCount].pid = processes[processIndex].pid;
+        segments[segmentCount].startTime = currentTime;
+
         currentTime += timeSlice;
+
+        // Record the end of this execution segment
+        segments[segmentCount].endTime = currentTime;
+        segmentCount++;
+
         processes[processIndex].remainingTime -= timeSlice;
 
         while (nextArrival < n &&
-                    processes[nextArrival].arrivalTime <= currentTime)
+               processes[nextArrival].arrivalTime <= currentTime)
         {
-
             queue[rear] = nextArrival;
             rear = (rear + 1) % 100;
             queueCount++;
-
             nextArrival++;
         }
 
         if (processes[processIndex].remainingTime == 0)
         {
-
             processes[processIndex].completionTime = currentTime;
 
             processes[processIndex].turnaroundTime =
@@ -247,12 +261,13 @@ void roundRobin(Process processes[], int n, int quantum)
         }
         else
         {
-
             queue[rear] = processIndex;
             rear = (rear + 1) % 100;
             queueCount++;
         }
     }
+
+    return segmentCount;
 }
 
 // Print Gantt Chart
@@ -364,6 +379,59 @@ void printGanttChart(Process processes[], int n)
         printf("%-8d", order[i].completionTime);
 
         previousFinish = order[i].completionTime;
+    }
+
+    printf("\n");
+}
+
+// Gantt Chart for Round Robin
+void printRRGanttChart(ScheduleSegment segments[], int count)
+{
+    printf("\n\nRound Robin Gantt Chart\n\n");
+
+    if (count <= 0)
+    {
+        printf("No execution segments to display.\n");
+        return;
+    }
+
+    // Print the top border
+    for (int i = 0; i < count; i++)
+    {
+        printf("+--------");
+    }
+    printf("+\n");
+
+    // Print process labels
+    printf("|");
+
+    for (int i = 0; i < count; i++)
+    {
+        if (segments[i].pid == 0)
+        {
+            printf("  IDLE  |");
+        }
+        else
+        {
+            printf("   P%-4d|", segments[i].pid);
+        }
+    }
+
+    printf("\n");
+
+    // Print the bottom border
+    for (int i = 0; i < count; i++)
+    {
+        printf("+--------");
+    }
+    printf("+\n");
+
+    // Print timestamps
+    printf("%-8d", segments[0].startTime);
+
+    for (int i = 0; i < count; i++)
+    {
+        printf("%-8d", segments[i].endTime);
     }
 
     printf("\n");

@@ -1,20 +1,29 @@
+
 #include <stdio.h>
 #include "process.h"
 #include "scheduler.h"
 
-int main() {
-
+int main()
+{
     int n;
     int choice;
-    int quantum;
+    int quantum = 0;
 
     Process processes[100];
+    ScheduleSegment segments[10000];
+    int segmentCount = 0;
 
     printf("Enter number of processes: ");
     scanf("%d", &n);
 
-    for (int i = 0; i < n; i++) {
+    if (n <= 0 || n > 100)
+    {
+        printf("Invalid number of processes. Enter 1 to 100.\n");
+        return 1;
+    }
 
+    for (int i = 0; i < n; i++)
+    {
         processes[i].pid = i + 1;
 
         printf("\nProcess %d\n", i + 1);
@@ -28,13 +37,15 @@ int main() {
         printf("Priority: ");
         scanf("%d", &processes[i].priority);
 
-        // Initially remaining time = burst time
+        if (processes[i].arrivalTime < 0 ||
+            processes[i].burstTime <= 0)
+        {
+            printf("Arrival time must be non-negative and burst time must be positive.\n");
+            return 1;
+        }
+
         processes[i].remainingTime = processes[i].burstTime;
     }
-
-    // -------------------------------
-    // SCHEDULING ALGORITHM MENU
-    // -------------------------------
 
     printf("\nChoose Scheduling Algorithm:\n");
     printf("1. FCFS\n");
@@ -44,61 +55,64 @@ int main() {
     printf("Enter your choice: ");
     scanf("%d", &choice);
 
-    if (choice == 1) {
-
+    if (choice == 1)
+    {
         fcfs(processes, n);
-
+        printGanttChart(processes, n);
     }
-    else if (choice == 2) {
-
+    else if (choice == 2)
+    {
         sjf(processes, n);
-
+        printGanttChart(processes, n);
     }
-    else if (choice == 3) {
-
+    else if (choice == 3)
+    {
         printf("Enter time quantum: ");
         scanf("%d", &quantum);
 
-        roundRobin(processes, n, quantum);
+        if (quantum <= 0)
+        {
+            printf("Time quantum must be greater than zero.\n");
+            return 1;
+        }
 
+        segmentCount = roundRobin(
+            processes,
+            n,
+            quantum,
+            segments);
+
+        printRRGanttChart(segments, segmentCount);
     }
-    else {
-
+    else
+    {
         printf("Invalid scheduling algorithm choice.\n");
         return 1;
-
     }
-
-    printGanttChart(processes, n);
-
 
     double totalWaiting = 0;
     double totalTurnaround = 0;
     double totalResponse = 0;
 
-    for (int i = 0; i < n; i++) {
-
+    for (int i = 0; i < n; i++)
+    {
         totalWaiting += processes[i].waitingTime;
         totalTurnaround += processes[i].turnaroundTime;
         totalResponse += processes[i].responseTime;
-
     }
 
     double averageWaiting = totalWaiting / n;
     double averageTurnaround = totalTurnaround / n;
     double averageResponse = totalResponse / n;
 
-
     printf("\n");
-    printf("-------------------------------------------------------------\n");
-
+    printf("--------------------------------------------------------------------------\n");
     printf("PID   Arrival   Burst   Completion   Turnaround   Waiting   Response\n");
+    printf("--------------------------------------------------------------------------\n");
 
-    printf("-------------------------------------------------------------\n");
-
-    for (int i = 0; i < n; i++) {
-
-        printf("P%d      %d        %d        %d           %d          %d         %d\n",
+    for (int i = 0; i < n; i++)
+    {
+        printf("P%-5d %-9d %-7d %-12d %-12d %-9d %d\n",
                processes[i].pid,
                processes[i].arrivalTime,
                processes[i].burstTime,
@@ -106,12 +120,7 @@ int main() {
                processes[i].turnaroundTime,
                processes[i].waitingTime,
                processes[i].responseTime);
-
     }
-
-    // -------------------------------
-    // DISPLAY AVERAGES
-    // -------------------------------
 
     printf("\nAverage Waiting Time: %.2f\n", averageWaiting);
     printf("Average Turnaround Time: %.2f\n", averageTurnaround);
