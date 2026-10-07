@@ -20,6 +20,8 @@ void fcfs(Process processes[], int n);
 
 void sjf(Process processes[], int n);
 
+int srtf(Process processes[], int n, ScheduleSegment segments[]);
+
 void priorityScheduling(Process processes[], int n);
 
 int roundRobin(
@@ -31,6 +33,6 @@ int roundRobin(
 
 void printGanttChart(Process processes[], int n);
 
-void printRRGanttChart(ScheduleSegment segments[], int count);
+void printSegmentGanttChart(ScheduleSegment segments[], int count);
 
 #endif

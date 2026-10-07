@@ -51,12 +51,13 @@ int main()
     printf("1. FCFS\n");
     printf("2. SJF (Non-Preemptive)\n");
     printf("3. Priority Scheduling (Non-Preemptive)\n");
-    printf("4. Round Robin\n");
+    printf("4. SRTF (Preemptive)\n");
+    printf("5. Round Robin\n");
 
     printf("Enter your choice: ");
     scanf("%d", &choice);
 
-    if (choice == 1)
+    if(choice == 1)
     {
         fcfs(processes, n);
         printGanttChart(processes, n);
@@ -71,7 +72,13 @@ int main()
         priorityScheduling(processes, n);
         printGanttChart(processes, n);
     }
-    else if (choice == 4)
+ else if (choice == 4)
+{
+    segmentCount = srtf(processes, n, segments);
+
+    printSegmentGanttChart(segments, segmentCount);
+}
+    else if (choice == 5)
     {
         printf("Enter time quantum: ");
         scanf("%d", &quantum);
@@ -88,8 +95,9 @@ int main()
             quantum,
             segments);
 
-        printRRGanttChart(segments, segmentCount);
+        printSegmentGanttChart(segments, segmentCount);
     }
+
     else
     {
         printf("Invalid scheduling algorithm choice.\n");

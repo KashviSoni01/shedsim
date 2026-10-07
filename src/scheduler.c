@@ -144,6 +144,162 @@ void sjf(Process processes[], int n)
     }
 }
 
+// Shortest Remaning Time First Scheduling
+int srtf(Process processes[], int n, ScheduleSegment segments[])
+{
+    for (int i = 0; i < n; i++)
+    {
+        processes[i].remainingTime = processes[i].burstTime;
+        processes[i].started = 0;
+    }
+
+    int currentTime = 0;
+    int completed = 0;
+    int segmentCount = 0;
+
+    int completedProcess[n];
+
+    for (int i = 0; i < n; i++)
+    {
+        completedProcess[i] = 0;
+    }
+
+    int lastProcess = -1;
+    int segmentStart = 0;
+
+    while (completed < n)
+    {
+        int selected = -1;
+
+        // Find the process with the shortest remaining time
+        for (int i = 0; i < n; i++)
+        {
+            if (completedProcess[i] == 0 &&
+                processes[i].arrivalTime <= currentTime)
+            {
+                if (selected == -1 ||
+                    processes[i].remainingTime < processes[selected].remainingTime)
+                {
+                    selected = i;
+                }
+            }
+        }
+
+        // CPU is idle
+        if (selected == -1)
+        {
+            // Finish the previous segment if one exists
+            if (lastProcess != -1)
+            {
+                segments[segmentCount].pid =
+                    processes[lastProcess].pid;
+
+                segments[segmentCount].startTime = segmentStart;
+                segments[segmentCount].endTime = currentTime;
+
+                segmentCount++;
+
+                lastProcess = -1;
+            }
+
+            int nextArrival = -1;
+
+            for (int i = 0; i < n; i++)
+            {
+                if (completedProcess[i] == 0)
+                {
+                    if (nextArrival == -1 ||
+                        processes[i].arrivalTime <
+                        processes[nextArrival].arrivalTime)
+                    {
+                        nextArrival = i;
+                    }
+                }
+            }
+
+            // Record idle period
+            if (currentTime < processes[nextArrival].arrivalTime)
+            {
+                segments[segmentCount].pid = 0;
+                segments[segmentCount].startTime = currentTime;
+                segments[segmentCount].endTime =
+                    processes[nextArrival].arrivalTime;
+
+                segmentCount++;
+            }
+
+            currentTime = processes[nextArrival].arrivalTime;
+            continue;
+        }
+
+        // A different process has been selected
+        if (selected != lastProcess)
+        {
+            // Finish the previous process's segment
+            if (lastProcess != -1)
+            {
+                segments[segmentCount].pid =
+                    processes[lastProcess].pid;
+
+                segments[segmentCount].startTime = segmentStart;
+                segments[segmentCount].endTime = currentTime;
+
+                segmentCount++;
+            }
+
+            // Start a new segment
+            segmentStart = currentTime;
+            lastProcess = selected;
+        }
+
+        // Record response time when process runs for the first time
+        if (processes[selected].started == 0)
+        {
+            processes[selected].startTime = currentTime;
+
+            processes[selected].responseTime =
+                currentTime - processes[selected].arrivalTime;
+
+            processes[selected].started = 1;
+        }
+
+        // Execute for one unit of time
+        processes[selected].remainingTime--;
+        currentTime++;
+
+        // Process completed
+        if (processes[selected].remainingTime == 0)
+        {
+            processes[selected].completionTime = currentTime;
+
+            processes[selected].turnaroundTime =
+                processes[selected].completionTime -
+                processes[selected].arrivalTime;
+
+            processes[selected].waitingTime =
+                processes[selected].turnaroundTime -
+                processes[selected].burstTime;
+
+            completedProcess[selected] = 1;
+            completed++;
+        }
+    }
+
+    // Finish the final segment
+    if (lastProcess != -1)
+    {
+        segments[segmentCount].pid =
+            processes[lastProcess].pid;
+
+        segments[segmentCount].startTime = segmentStart;
+        segments[segmentCount].endTime = currentTime;
+
+        segmentCount++;
+    }
+
+    return segmentCount;
+}
+
 // Round Robin Sheduling
 int roundRobin(
     Process processes[],
@@ -270,6 +426,7 @@ int roundRobin(
     return segmentCount;
 }
 
+// Priority Scheduling
 void priorityScheduling(Process processes[], int n)
 {
     sortByArrival(processes, n);
@@ -461,10 +618,10 @@ void printGanttChart(Process processes[], int n)
     printf("\n");
 }
 
-// Gantt Chart for Round Robin
-void printRRGanttChart(ScheduleSegment segments[], int count)
+// Gantt Chart for Round Robin, srtf
+void printSegmentGanttChart(ScheduleSegment segments[], int count)
 {
-    printf("\n\nRound Robin Gantt Chart\n\n");
+    printf("\nGantt Chart\n");
 
     if (count <= 0)
     {
