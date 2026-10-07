@@ -23,6 +23,7 @@ void sjf(Process processes[], int n);
 int srtf(Process processes[], int n, ScheduleSegment segments[]);
 
 void priorityScheduling(Process processes[], int n);
+int preemptivePriority(Process processes[], int n, ScheduleSegment segments[]);
 
 int roundRobin(
     Process processes[],
