@@ -50,7 +50,8 @@ int main()
     printf("\nChoose Scheduling Algorithm:\n");
     printf("1. FCFS\n");
     printf("2. SJF (Non-Preemptive)\n");
-    printf("3. Round Robin\n");
+    printf("3. Priority Scheduling (Non-Preemptive)\n");
+    printf("4. Round Robin\n");
 
     printf("Enter your choice: ");
     scanf("%d", &choice);
@@ -66,6 +67,11 @@ int main()
         printGanttChart(processes, n);
     }
     else if (choice == 3)
+    {
+        priorityScheduling(processes, n);
+        printGanttChart(processes, n);
+    }
+    else if (choice == 4)
     {
         printf("Enter time quantum: ");
         scanf("%d", &quantum);

@@ -270,6 +270,83 @@ int roundRobin(
     return segmentCount;
 }
 
+void priorityScheduling(Process processes[], int n)
+{
+    sortByArrival(processes, n);
+
+    int currentTime = processes[0].arrivalTime;
+    int completed = 0;
+
+    int completedProcess[n];
+
+    for (int i = 0; i < n; i++)
+    {
+        completedProcess[i] = 0;
+    }
+
+    while (completed < n)
+    {
+        int selected = -1;
+
+        for (int i = 0; i < n; i++)
+        {
+            if (completedProcess[i] == 0 &&
+                processes[i].arrivalTime <= currentTime)
+            {
+                if (selected == -1 ||
+                    processes[i].priority < processes[selected].priority)
+                {
+                    selected = i;
+                }
+            }
+        }
+
+        if (selected == -1)
+        {
+            // CPU is idle.
+            // Find the earliest arriving unfinished process.
+
+            int nextArrival = -1;
+
+            for (int i = 0; i < n; i++)
+            {
+                if (completedProcess[i] == 0)
+                {
+                    if (nextArrival == -1 ||
+                        processes[i].arrivalTime < processes[nextArrival].arrivalTime)
+                    {
+                        nextArrival = i;
+                    }
+                }
+            }
+
+            currentTime = processes[nextArrival].arrivalTime;
+        }
+        else
+        {
+            processes[selected].startTime = currentTime;
+
+            processes[selected].responseTime =
+                currentTime - processes[selected].arrivalTime;
+
+            currentTime += processes[selected].burstTime;
+
+            processes[selected].completionTime = currentTime;
+
+            processes[selected].turnaroundTime =
+                processes[selected].completionTime -
+                processes[selected].arrivalTime;
+
+            processes[selected].waitingTime =
+                processes[selected].turnaroundTime -
+                processes[selected].burstTime;
+
+            completedProcess[selected] = 1;
+            completed++;
+        }
+    }
+}
+
 // Print Gantt Chart
 void printGanttChart(Process processes[], int n)
 {

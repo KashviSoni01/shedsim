@@ -1,12 +1,17 @@
 #ifndef SCHEDULER_H
+
 #define SCHEDULER_H
 
 #include "process.h"
 
 typedef struct {
+
     int pid;
+
     int startTime;
+
     int endTime;
+
 } ScheduleSegment;
 
 void sortByArrival(Process processes[], int n);
@@ -14,6 +19,8 @@ void sortByArrival(Process processes[], int n);
 void fcfs(Process processes[], int n);
 
 void sjf(Process processes[], int n);
+
+void priorityScheduling(Process processes[], int n);
 
 int roundRobin(
     Process processes[],
