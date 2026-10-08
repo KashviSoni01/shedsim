@@ -1,89 +1,191 @@
 # SchedSim — CPU Scheduling Simulator
 
-## Project Description
+## 1. Project Description
 
-SchedSim is a command-line CPU scheduling simulator written entirely in C.
+**SchedSim** is a command-line CPU scheduling simulator developed in **C**. It simulates different CPU scheduling algorithms and calculates important scheduling metrics such as Completion Time, Turnaround Time, Waiting Time, and Response Time.
 
-In a multitasking operating system, multiple processes compete for access to the CPU. The operating system uses CPU scheduling algorithms to decide which process should execute, when it should execute, and for how long.
-
-Different scheduling strategies can produce significantly different results in terms of waiting time, turnaround time, response time, and CPU utilization.
-
-SchedSim aims to simulate this process in a controlled environment. Users will be able to create a set of processes, select a CPU scheduling algorithm, simulate their execution, visualize the execution timeline, and analyze the resulting scheduling metrics.
-
-The project will implement multiple scheduling algorithms and provide a way to compare their behavior using the same set of processes.
+The simulator also generates a Gantt chart to visualize the order in which processes are executed.
 
 ---
 
-## Problem Statement
+## 2. Project Goals
 
-CPU scheduling is a fundamental operating-system problem where multiple processes compete for a limited CPU resource.
+The main goals of the project are:
 
-Although scheduling algorithms can be studied mathematically, it can be difficult to understand how their decisions affect the actual execution of processes.
-
-SchedSim addresses this by providing an interactive simulation environment where process scheduling can be observed step by step.
-
-The simulator will model process arrival, execution, waiting, completion, and preemption where applicable. It will then calculate important scheduling metrics and present the results in a readable format.
-
----
-
-## Goals
-
-The main goals of SchedSim are:
-
-1. Understand CPU scheduling through practical implementation in C.
-2. Implement multiple CPU scheduling algorithms from scratch.
-3. Simulate process execution over time.
-4. Calculate important scheduling metrics.
-5. Display process execution using terminal-based Gantt charts.
-6. Compare the behavior of different scheduling algorithms on the same workload.
-7. Practice C programming concepts such as structures, arrays, functions, pointers, queues, and file handling.
-8. Build a well-structured C project suitable for use as a portfolio project.
+- To understand how CPU scheduling works in operating systems.
+- To implement common CPU scheduling algorithms in C.
+- To understand preemptive and non-preemptive scheduling.
+- To calculate and compare scheduling metrics.
+- To visualize process execution using Gantt charts.
+- To gain practical experience with modular C programming and Git.
 
 ---
 
-## Specifications
+## 3. Project Specifications
 
-### Process Information
+### Input
 
-Each process will contain information such as:
+The user provides:
 
-- Process ID
-- Arrival Time
-- Burst Time
+- Number of processes
+- Arrival time
+- Burst time
 - Priority
-- Remaining Burst Time
+- Scheduling algorithm
+- Time quantum for Round Robin
+
+For priority scheduling, a **smaller number means higher priority**.
+
+### Output
+
+The simulator displays:
+
+- Gantt chart
 - Completion Time
 - Turnaround Time
 - Waiting Time
 - Response Time
+- Average scheduling metrics
 
-### Scheduling Algorithms
+CPU idle periods are also represented in the Gantt chart.
 
-The initial version of SchedSim will implement:
+---
 
-- First Come First Serve (FCFS)
-- Shortest Job First (SJF)
-- Round Robin (RR)
+## 4. Scheduling Algorithms
 
-Additional algorithms may be added as future improvements.
+| Algorithm | Type | Preemptive |
+|---|---|---|
+| FCFS | First Come First Serve | No |
+| SJF | Shortest Job First | No |
+| Priority Scheduling | Priority Based | No |
+| Priority Scheduling | Priority Based | Yes |
+| SRTF | Shortest Remaining Time First | Yes |
+| Round Robin | Time Sharing | Yes |
 
 ### Scheduling Metrics
 
-For each process, the simulator will calculate:
+```text
+Turnaround Time = Completion Time - Arrival Time
 
-- Completion Time
-- Turnaround Time
-- Waiting Time
-- Response Time
+Waiting Time = Turnaround Time - Burst Time
 
-The simulator will also calculate average values across all processes.
+Response Time = First Start Time - Arrival Time
+```
 
-### Visualization
+---
 
-The simulator will display the execution order of processes using a terminal-based Gantt chart.
+## 5. Project Design
 
-Example:
+The project uses a modular structure:
 
 ```text
-| P1 | P1 | P2 | P2 | P3 | P3 |
-0    1    2    3    4    5    6
+schedsim/
+│
+├── include/
+│   ├── process.h
+│   └── scheduler.h
+│
+├── src/
+│   ├── main.c
+│   ├── process.c
+│   └── scheduler.c
+│
+└── README.md
+```
+
+### Components
+
+**`main.c`**
+- Handles user input
+- Displays the algorithm menu
+- Runs the selected algorithm
+- Displays results
+
+**`process.h`**
+- Defines the `Process` structure.
+
+**`scheduler.h`**
+- Contains scheduling and Gantt chart declarations.
+
+**`scheduler.c`**
+- Implements all six scheduling algorithms.
+- Handles Gantt chart generation.
+
+The `Process` structure stores information such as PID, arrival time, burst time, priority, remaining time, and scheduling metrics.
+
+For preemptive algorithms, a `ScheduleSegment` structure is used to record the process ID, start time, and end time of each execution segment.
+
+---
+
+## 6. Example
+
+### Input
+
+```text
+Number of processes: 4
+
+P1: Arrival = 0, Burst = 8, Priority = 3
+P2: Arrival = 1, Burst = 3, Priority = 1
+P3: Arrival = 2, Burst = 2, Priority = 2
+P4: Arrival = 4, Burst = 1, Priority = 4
+```
+
+Using **Preemptive Priority Scheduling**:
+
+```text
+P1 | P2 | P3 | P1 | P4
+0    1    4    6    13   14
+```
+
+---
+
+## 7. Compilation and Execution
+
+### Compile
+
+```bash
+gcc src/main.c src/process.c src/scheduler.c -Iinclude -o schedsim
+```
+
+### Run on Windows
+
+```powershell
+.\schedsim.exe
+```
+
+### Run on Linux/macOS
+
+```bash
+./schedsim
+```
+
+---
+
+## 8. Testing
+
+The project was tested using different process configurations, including:
+
+- Different arrival times
+- Different burst times
+- Different priorities
+- CPU idle periods
+- Preemptive scheduling
+- Round Robin with different time quanta
+
+The tests were used to verify Gantt charts and scheduling metrics.
+
+---
+
+## 9. Conclusion
+
+SchedSim provides a practical way to understand and compare fundamental CPU scheduling algorithms.
+
+The project combines Operating Systems concepts with C programming and demonstrates how different scheduling strategies affect process execution and performance.
+
+---
+
+## 10. Author
+
+**Kashvi Soni**
+
+Educational project developed to understand CPU scheduling and Operating Systems concepts.
